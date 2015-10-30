@@ -6,4 +6,4 @@ where a.created >= NOW() - :since::INTERVAL
 and a.issueid=j.id 
 and j.project=p.id
 and a.author in (:names)
-order by a.created desc;
+order by a.created asc;

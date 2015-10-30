@@ -6,4 +6,4 @@ inner join project p	on j.project=p.id
 where cg.created >= NOW() - :since::INTERVAL
 and ci.field in (:ChangedFields)
 and cg.author in (:names)
-order by cg.created desc;
+order by cg.created asc;
