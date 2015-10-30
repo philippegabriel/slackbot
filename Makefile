@@ -12,21 +12,21 @@ targets:=$(subst .csv,.sent,$(csv))
 ###############################################################################################
 all: $(targets)
 %.csv: %.sql
-	. ./.config.sh ; psql \
+	. ./$(config) ; psql \
 	--field-separator=" " --no-align --tuples-only 	\
 	--variable=since="$$since" \
 	--variable=names="$$names" \
 	--variable=ChangedFields="$$ChangedFields" \
 	-f $< > $@
 %.sent: %.csv 
-	. ./.config.sh ; ./postSlack.sh < $<
+	. ./$(config) ; ./postSlack.sh < $<
 	echo "sent $< at `date`" > $@
 login:
-	. ./.config.sh ; psql
+	. ./$(config) ; psql
 clean: 
 	rm -f $(csv) $(targets)
 env:
-	. ./.config.sh ; env | sort	
+	. ./$(config) ; env | sort	
 csv: $(csv)
 	cat $(csv)	
 test:

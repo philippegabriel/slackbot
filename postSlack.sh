@@ -3,7 +3,6 @@
 #https://citrix.slack.com/services/new/incoming-webhook
 #
 #read endpoint from config file
-. .config.sh
 Usage() {
 echo "Missing argument(s)
 Usage:
