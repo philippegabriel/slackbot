@@ -1,0 +1,2 @@
+PATH=/bin:/usr/bin
+*/5 * * * * cd /local/scratch/slackbot;make clean;make config=.config.test.sh
