@@ -7,12 +7,13 @@
 Usage() {
 echo "Missing argument(s)
 Usage:
-$0 channel <channel> botname <name> msg <msg to post> [emoji <emoji name>]
+$0 channel <channel> botname <name> endpoint <slack webhook url> [emoji <emoji name>] < \"text to post\"
+input on stdin
+parameters can also be specified as environment vars with the same name 
 channel, botname as registered with slack incoming webhook
 See: #https://citrix.slack.com/services/new/incoming-webhook"
 exit 1
 }
-[ $# -ne 0 ] || Usage
 while [ $# -ge 2 ]
 do
 case "$1" in
@@ -20,8 +21,8 @@ case "$1" in
 		channel=$2;;
 	botname)
 		botname=$2;;
-	msg)
-		msg=$2;;
+	endpoint)
+		endpoint=$2;;
 	emoji)
 		emoji=$2;;
 	*)
@@ -29,13 +30,16 @@ case "$1" in
 esac
 shift;shift
 done
-read -r -d '' payload << EOF
-"channel": "$channel",
-"username": "$botname",
-"text": "$msg",
-"icon_emoji": "$emoji"
+while read line
+do
+	read -r -d '' payload << EOF
+	"channel": "$channel",
+	"username": "$botname",
+	"text": "$line",
+	"icon_emoji": "$emoji"
 EOF
-echo $payload
-echo $SlackEndpoint
-curl -X POST --data-urlencode "payload={$payload}" $SlackEndpoint
+#echo $payload
+#echo $endpoint
+	curl -X POST --data-urlencode "payload={$payload}" $endpoint
+done
 exit 0

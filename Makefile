@@ -1,60 +1,33 @@
 #!/usr/bin/make -f
-# philippeg feb2014
-# Generate csv files
-# with persons who were assigned or commented on jira tickets, between a set of dates
-# using the jira SQL interface, see: https://developer.atlassian.com/display/JIRADEV/Database+Schema 
+# philippeg oct2015
+# query jira using the jira SQL interface
+#see: https://developer.atlassian.com/display/JIRADEV/Database+Schema 
+#Post the result on a Slack Channel
+#see: https://slack.com/services/new/incoming-webhook
 #
-.PHONY: login clean reallyclean deploy test post
-############################config file#######################################################
-SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-configFile:=$(SELF_DIR)/.config
-###########################jira params########################################################
-#jira server params, read from .config file
-config=$(lastword $(shell grep $(1) $(configFile)))
-host:=$(call config,'host')
-dbname:=$(call config,'dbname')
-username:=$(call config,'username')
-password:=$(call config,'password')
-#psql generic methods
-setJiraPass=export PGPASSWORD=$(password)
-ConnectToJira=psql --host=$(host) --dbname=$(dbname) --username=$(username)
-#Define function to set multiple argument list in a compatible psql format, i.e. 'item1','item2',...
-qw=$(shell echo $(1) | sed "s/\([^,]*\)/'\1'/g")
-##########################customise this section###############################################
-#query interval - needs to be in sync with cron period
-since:=5 mins
-#jira projects, e.g. CA, CP, SCTX... 
-projects:=CA,CP,SCTX,XOP
-#Set of people for report
-names=svcacct_xs_xenrt,philippeg
-ChangedFields=status
-########################end of custom section##################################################
-########################autogen vars###########################################################
-targets=$(subst .sql,.csv,$(shell ls *.sql))
-namesPsqlFormat=$(call qw,$(names))
-projectsPsqlFormat=$(call qw,$(projects))
-sincePsqlFormat=$(call qw,$(since))
-ChangedFieldsPsqlFormat=$(call qw,$(ChangedFields))
+.PHONY: login clean env csv test
+config:=.config.sh 
+csv:=$(subst .sql,.csv,$(shell ls *.sql))
+targets:=$(subst .csv,.sent,$(csv))
 ###############################################################################################
-all: clean $(report) 
+all: $(targets)
 %.csv: %.sql
-	$(setJiraPass) ; $(ConnectToJira) \
+	. ./.config.sh ; psql \
 	--field-separator=" " --no-align --tuples-only 	\
-	--variable=since="$(sincePsqlFormat)" \
-	--variable=names="$(namesPsqlFormat)" \
-	--variable=ChangedFields="$(ChangedFieldsPsqlFormat)" \
+	--variable=since="$$since" \
+	--variable=names="$$names" \
+	--variable=ChangedFields="$$ChangedFields" \
 	-f $< > $@
-post:
-	./postSlack.sh channel '#devtest' botname 'Hello' msg 'Hello from script' emoji ':package:'
+%.sent: %.csv 
+	. ./.config.sh ; ./postSlack.sh < $<
+	echo "sent $< at `date`" > $@
 login:
-	$(setJiraPass) ; $(ConnectToJira)
+	. ./.config.sh ; psql
 clean: 
-	rm -f $(targets) $(report) $(ticketlist)
-reallyclean:
-	rm -f *.csv
-deploy:
-	cp -f * $(deployTarget)
-	cp -f $(inclpath)$(inclfile) $(deployTarget)
-test: reallyclean $(targets) 
-	cat $(targets)
-	
+	rm -f $(csv) $(targets)
+env:
+	. ./.config.sh ; env | sort	
+csv: $(csv)
+	cat $(csv)	
+test:
+	@echo $(csv) $(targets)		
