@@ -7,7 +7,7 @@
 #
 .PHONY: login clean env csv test
 
-config:=.config.test.sh 
+config:=config.slackbot/.config.test.sh 
 slackbotId:=$(shell . ./$(config) ; echo $$slackbotId)
 sql:=$(shell ls *.sql)
 csv:=$(subst .sql,.$(slackbotId).csv,$(sql))
