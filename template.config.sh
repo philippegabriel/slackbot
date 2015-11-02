@@ -20,3 +20,7 @@ export ChangedFields="'status'"
 export endpoint=
 export channel=
 export botname=
+#############################id######################################################
+#Allows to run multiple slackbots with different ids
+export slackbotId=test
+

@@ -6,19 +6,22 @@
 #see: https://slack.com/services/new/incoming-webhook
 #
 .PHONY: login clean env csv test
-config:=.config.sh 
-csv:=$(subst .sql,.csv,$(shell ls *.sql))
-targets:=$(subst .csv,.sent,$(csv))
+
+config:=.config.test.sh 
+slackbotId:=$(shell . ./$(config) ; echo $$slackbotId)
+sql:=$(shell ls *.sql)
+csv:=$(subst .sql,.$(slackbotId).csv,$(sql))
+targets:=$(subst .$(slackbotId).csv,.$(slackbotId).sent,$(csv))
 ###############################################################################################
 all: $(targets)
-%.csv: %.sql
+%.$(slackbotId).csv: %.sql
 	. ./$(config) ; psql \
 	--field-separator=" " --no-align --tuples-only 	\
 	--variable=since="$$since" \
 	--variable=names="$$names" \
 	--variable=ChangedFields="$$ChangedFields" \
 	-f $< > $@
-%.sent: %.csv 
+%.$(slackbotId).sent: %.$(slackbotId).csv 
 	. ./$(config) ; ./postSlack.sh < $<
 	echo "sent $< at `date`" > $@
 login:
@@ -30,4 +33,5 @@ env:
 csv: $(csv)
 	cat $(csv)	
 test:
-	@echo $(csv) $(targets)		
+	@echo $(slackbotId)
+	@echo $(sql) $(csv) $(targets)		
