@@ -1,0 +1,3 @@
+[submodule "config.slackbot"]
+	path = config.slackbot
+	url = https://gitlab.citrite.net/philippeg/config.slackbot.git
