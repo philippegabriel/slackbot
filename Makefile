@@ -19,6 +19,7 @@ all: $(targets)
 	--field-separator=" " --no-align --tuples-only 	\
 	--variable=since="$$since" \
 	--variable=names="$$names" \
+	--variable=jiraUrl="$$jiraUrl" \
 	--variable=ChangedFields="$$ChangedFields" \
 	-f $< > $@
 %.$(slackbotId).sent: %.$(slackbotId).csv 
