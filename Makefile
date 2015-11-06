@@ -21,7 +21,7 @@ all: $(targets)
 	--variable=names="$$names" \
 	--variable=jiraUrl="$$jiraUrl" \
 	--variable=ChangedFields="$$ChangedFields" \
-	-f $< > $@
+	-f $< | uniq > $@
 %.$(slackbotId).sent: %.$(slackbotId).csv 
 	. ./$(config) ; ./postSlack.sh < $<
 	echo "sent $< at `date`" > $@
