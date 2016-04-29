@@ -22,6 +22,12 @@ all: $(targets)
 	--variable=jiraUrl="$$jiraUrl" \
 	--variable=ChangedFields="$$ChangedFields" \
 	-f $< | uniq > $@
+%SCTX.csv: %SCTX.sql
+	. ./$(config) ; psql \
+	--field-separator=" " --no-align --tuples-only 	\
+	--variable=since="'100 hour'" \
+	--variable=jiraUrl="$$jiraUrl" \
+	-f $<
 %.$(slackbotId).sent: %.$(slackbotId).csv 
 	. ./$(config) ; ./postSlack.sh < $<
 	echo "sent $< at `date`" > $@
